@@ -261,7 +261,7 @@ flags.DEFINE_enum('device', 'gpu', ('cpu', 'gpu', 'CPU', 'GPU'),
 flags.DEFINE_enum('data_format', 'NCHW', ('NHWC', 'NCHW'),
                   'Data layout to use: NHWC (TF native) or NCHW (cuDNN '
                   'native, requires GPU).')
-flags.DEFINE_integer('num_intra_threads', None,
+flags.DEFINE_integer('num_intra_threads', 0,
                      'Number of threads to use for intra-op parallelism. If '
                      'set to 0, the system will pick an appropriate number.')
 flags.DEFINE_integer('num_inter_threads', 0,
@@ -884,10 +884,10 @@ def benchmark_one_step(sess,
 def get_perf_timing_str(speed_mean, speed_uncertainty, speed_jitter, scale=1):
   if scale == 1:
     # TODO(laigd): rename 'images' to maybe 'inputs', same below.
-    return ('images/sec: %.1f +/- %.1f (jitter = %.1f)' %
+    return ('images/sec: %.5f +/- %.1f (jitter = %.1f)' %
             (speed_mean, speed_uncertainty, speed_jitter))
   else:
-    return 'images/sec: %.1f' % speed_mean
+    return 'images/sec: %.5f' % speed_mean
 
 
 def get_perf_timing(batch_size, step_train_times, scale=1):
@@ -1685,6 +1685,7 @@ class BenchmarkCNN(object):
       log_fn('RewriterConfig: %s' % self.rewriter_config)
     log_fn('Optimizer:   %s' % self.params.optimizer)
     log_fn('Variables:   %s' % self.params.variable_update)
+    log_fn('Use Fp16:   %s' % self.params.use_fp16) 
     if (self.params.variable_update == 'replicated' or
         self.params.variable_update == 'distributed_all_reduce'
         or self.params.variable_update == 'collective_all_reduce'):
@@ -1942,7 +1943,7 @@ class BenchmarkCNN(object):
         # Note that we compute the top 1 accuracy and top 5 accuracy for each
         # batch, which will have a slight performance impact.
         log_fn('-' * 64)
-        log_fn('total images/sec: %.2f' % images_per_sec)
+        log_fn('total images/sec: %.5f' % images_per_sec)
         log_fn('-' * 64)
       if self.benchmark_logger:
         eval_result = {
@@ -2366,7 +2367,7 @@ class BenchmarkCNN(object):
     if not self.params.eval_during_training_every_n_steps:
       log_fn('-' * 64)
       # TODO(laigd): rename 'images' to maybe 'inputs'.
-      log_fn('total images/sec: %.2f' % images_per_sec)
+      log_fn('total images/sec: %.5f' % images_per_sec)
       log_fn('-' * 64)
     else:
       log_fn('Done with training')
