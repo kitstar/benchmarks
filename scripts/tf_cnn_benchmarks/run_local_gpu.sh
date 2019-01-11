@@ -6,7 +6,6 @@ NUM_GPUS=1
 
 python tf_cnn_benchmarks.py \
 --variable_update=independent \
---data_format=NHWC \
 --batch_size=${BATCH_SIZE} \
 --model=${MODEL} \
 --num_gpus=${NUM_GPUS} \
